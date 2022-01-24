@@ -13,7 +13,7 @@ class ImageCreationSchema(RequestSchema):
     file = fields.String()
     url = fields.URL()
     label = fields.String(allow_none=True)
-    enable_object_detection = fields.Boolean(default=False)
+    enable_object_detection = fields.Boolean(dump_default=False)
 
     @validates_schema
     def validate_file_or_url_provided(self, data: Any, **kwargs) -> None:
@@ -26,4 +26,4 @@ class ImageCreationSchema(RequestSchema):
 
 class ImageListSchema(ResponseSchema):
     count = fields.Number()
-    items = fields.List(fields.Nested(ImageSchema), default=[])
+    images = fields.List(fields.Nested(ImageSchema), dump_default=[])

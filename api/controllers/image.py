@@ -2,10 +2,10 @@ import flask_rebar
 
 from api.app import registry
 from api.schemas.image import ImageSchema, ImageCreationSchema, ImageListSchema
+from api.services import image_service
 from flask_rebar import errors
 from uuid import UUID
 
-from api.services import image_service
 
 BASE_URL = "/images"
 
@@ -15,10 +15,10 @@ BASE_URL = "/images"
     rule=BASE_URL,
     response_body_schema={200: ImageListSchema()},
 )
-def get_images():
+def get_all_images():
     images = image_service.get_all_images()
 
-    return {"count": len(images), "items": images}, 200
+    return {"count": len(images), "images": images}, 200
 
 
 @registry.handles(
@@ -29,10 +29,10 @@ def get_images():
 def get_image(image_id: UUID):
     image = image_service.get_image_by(str(image_id))
 
-    if (image is None):
+    if image is None:
         raise errors.NotFound("Image not found")
 
-    return image
+    return image, 200
 
 
 @registry.handles(

@@ -13,6 +13,8 @@ flask-sqlalchemy = "^2.3.2"
 google-cloud-vision = "^2.6.3"
 
 [tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+mock = "^4.0.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
