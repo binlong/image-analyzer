@@ -27,3 +27,6 @@ This project uses python and Flask to develop a REST API that utilizes google cl
 
 # Running flake8
 * flask run flake8
+
+# Swagger UI
+http://localhost:5000/api/swagger/ui
