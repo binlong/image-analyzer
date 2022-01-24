@@ -19,3 +19,9 @@ This project uses python and Flask to develop a REST API that utilizes google cl
 
 # Run Application
 * flask run
+
+# Running Tests
+* flask run pytest
+
+# Running flake8
+* flask run flake8
