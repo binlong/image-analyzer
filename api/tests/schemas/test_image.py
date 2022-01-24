@@ -1,5 +1,6 @@
 import pytest
 
+from api.models.detected_object import DetectedObject
 from api.models.image import Image
 from marshmallow import ValidationError
 from mock import patch
@@ -12,124 +13,155 @@ TARGET_MODULE = "api.schemas.image"
 def test_image_schema(get_handler):
     subject = get_handler(TARGET_MODULE)
 
-    #setup
+    # setup
     image_id = uuid4()
     label = "test_label"
-    image = Image(id=str(image_id), label=label)
+    detected_object = DetectedObject(name="object_name")
+    image = Image(id=str(image_id), label=label, detected_objects=[detected_object])
 
-    #when
+    # when
     response = subject.ImageSchema().dump(image)
 
-    #then
-    assert response['id'] == str(image_id)
-    assert response['label'] == label
+    # then
+    assert response["id"] == str(image_id)
+    assert response["label"] == label
+    assert response["detected_objects"][0]["name"] == detected_object.name
+
 
 @patch(f"{TARGET_MODULE}.imghdr")
 def test_image_creation_schema(imghdr_mock, get_handler):
     subject = get_handler(TARGET_MODULE)
 
-    #setup
+    # setup
     image_creation_body = {
-        'file': 'test_file.jpg',
-        'label': 'test_label',
-        'enable_object_detection': True
+        "file": "test_file.jpg",
+        "label": "test_label",
+        "enable_object_detection": True,
     }
-    imghdr_mock.what.return_value = 'jpg'
+    imghdr_mock.what.return_value = "jpg"
 
-    #when
+    # when
     response = subject.ImageCreationSchema().load(image_creation_body)
 
-    #then
-    assert response['file'] == image_creation_body['file']
-    assert response['label'] == image_creation_body['label']
-    assert response['enable_object_detection'] == image_creation_body['enable_object_detection']
+    # then
+    assert response["file"] == image_creation_body["file"]
+    assert response["label"] == image_creation_body["label"]
+    assert (
+        response["enable_object_detection"]
+        == image_creation_body["enable_object_detection"]
+    )
 
 
 def test_image_creation_schema_file_location_validation(get_handler):
     subject = get_handler(TARGET_MODULE)
 
-    #setup
+    # setup
     image_creation_body = {
-        'file': 'failed-location.jpg',
-        'label': 'test_label',
-        'enable_object_detection': True
+        "file": "failed-location.jpg",
+        "label": "test_label",
+        "enable_object_detection": True,
     }
 
-
-
-    #when
+    # when
     with pytest.raises(ValidationError) as error:
         subject.ImageCreationSchema().load(image_creation_body)
 
-    #then
-    assert error.value.messages['_schema'][0] == 'Must provide correct file location'
+    # then
+    assert error.value.messages["_schema"][0] == "Must provide correct file location"
 
 
 @patch(f"{TARGET_MODULE}.imghdr")
 def test_image_creation_schema_not_image_file(imghdr_mock, get_handler):
     subject = get_handler(TARGET_MODULE)
 
-    #setup
+    # setup
     image_creation_body = {
-        'file': 'test_file.txt',
-        'label': 'test_label',
-        'enable_object_detection': True
+        "file": "test_file.txt",
+        "label": "test_label",
+        "enable_object_detection": True,
     }
     imghdr_mock.what.return_value = None
 
-
-    #when
+    # when
     with pytest.raises(ValidationError) as error:
         subject.ImageCreationSchema().load(image_creation_body)
 
-    #then
-    assert error.value.messages['_schema'][0] == 'Must provide valid image format'
+    # then
+    assert error.value.messages["_schema"][0] == "Must provide valid image format"
 
 
 def test_image_creation_schema_file_url_not_both_provided_validation(get_handler):
     subject = get_handler(TARGET_MODULE)
 
-    #setup
+    # setup
     image_creation_body = {
-        'file': 'test_file.jpg',
-        'url' : 'http://www.abc.com',
+        "file": "test_file.jpg",
+        "url": "http://www.abc.com",
     }
 
-
-    #when
+    # when
     with pytest.raises(ValidationError) as error:
         subject.ImageCreationSchema().load(image_creation_body)
 
-    # then
-    assert error.value.messages['_schema'][0] == 'Only file or URL is needed.'
+    #  then
+    assert error.value.messages["_schema"][0] == "Only file or URL is needed."
 
 
 def test_image_creation_schema_need_file_or_url_provided(get_handler):
     subject = get_handler(TARGET_MODULE)
 
-    #setup
-    image_creation_body = {'label': 'test_label'}
+    # setup
+    image_creation_body = {"label": "test_label"}
 
-    #when
+    # when
     with pytest.raises(ValidationError) as error:
         subject.ImageCreationSchema().load(image_creation_body)
 
-    # then
-    assert error.value.messages['_schema'][0] == 'Must provide file or URL for image.'
+    #  then
+    assert error.value.messages["_schema"][0] == "Must provide file or URL for image."
 
 
 def test_image_list_schema(get_handler):
     subject = get_handler(TARGET_MODULE)
 
-    #setup
+    # setup
     image_id = uuid4()
     label = "test_label"
     image = Image(id=str(image_id), label=label)
 
-    #when
-    response = subject.ImageListSchema().dump({'count': 1, 'images': [image]})
+    # when
+    response = subject.ImageListSchema().dump({"count": 1, "images": [image]})
 
-    #then
-    assert response['count'] == 1
-    assert response['images'][0]['id'] == str(image_id)
-    assert response['images'][0]['label'] == label
+    # then
+    assert response["count"] == 1
+    assert response["images"][0]["id"] == str(image_id)
+    assert response["images"][0]["label"] == label
+
+
+def test_query_image_schema(get_handler):
+    subject = get_handler(TARGET_MODULE)
+
+    # setup
+    query_body = {
+        "objects": '"cat,dog"',
+    }
+
+    # when
+    response = subject.QueryImageSchema().load(query_body)
+
+    # then
+    assert response["objects"] == query_body["objects"]
+
+
+def test_detected_object_schema(get_handler):
+    subject = get_handler(TARGET_MODULE)
+
+    # setup
+    name = "object_name"
+    detected_object = DetectedObject(name=name)
+
+    # when
+    response = subject.DetectedObjectSchema().dump(detected_object)
+
+    # then
+    assert response["name"] == detected_object.name

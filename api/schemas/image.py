@@ -5,9 +5,16 @@ from flask_rebar import ResponseSchema, RequestSchema
 from marshmallow import fields, validates_schema, ValidationError
 
 
+class DetectedObjectSchema(ResponseSchema):
+    name = fields.String()
+
+
 class ImageSchema(ResponseSchema):
     id = fields.UUID()
     label = fields.String()
+    detected_objects = fields.List(
+        fields.Nested(DetectedObjectSchema),
+        dump_default=[])
 
 
 class ImageCreationSchema(RequestSchema):
@@ -18,22 +25,26 @@ class ImageCreationSchema(RequestSchema):
 
     @validates_schema
     def validate_file_or_url_provided(self, data: Any, **kwargs) -> None:
-        if 'file' in data and 'url' in data:
-            raise ValidationError('Only file or URL is needed.')
+        if "file" in data and "url" in data:
+            raise ValidationError("Only file or URL is needed.")
 
-        if 'file' not in data and 'url' not in data:
-            raise ValidationError('Must provide file or URL for image.')
+        if "file" not in data and "url" not in data:
+            raise ValidationError("Must provide file or URL for image.")
 
-        if 'file' in data:
+        if "file" in data:
             try:
-                image_format = imghdr.what(data['file'])
+                image_format = imghdr.what(data["file"])
             except OSError:
-                raise ValidationError('Must provide correct file location')
+                raise ValidationError("Must provide correct file location")
 
             if image_format is None:
-                raise ValidationError('Must provide valid image format')
+                raise ValidationError("Must provide valid image format")
 
 
 class ImageListSchema(ResponseSchema):
     count = fields.Number()
     images = fields.List(fields.Nested(ImageSchema), dump_default=[])
+
+
+class QueryImageSchema(RequestSchema):
+    objects = fields.String()

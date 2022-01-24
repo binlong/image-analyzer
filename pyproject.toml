@@ -11,10 +11,14 @@ flask-migrate = "^3.1.0"
 flask-rebar = "^2.1.1"
 flask-sqlalchemy = "^2.3.2"
 google-cloud-vision = "^2.6.3"
+validators = "^0.18.2"
 
 [tool.poetry.dev-dependencies]
+black = "^21.12b0"
+flake8 = "^4.0.1"
 pytest = "^6.2.5"
 mock = "^4.0.3"
+munch = "^2.5.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

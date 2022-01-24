@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 
 rebar = Rebar()
-registry = rebar.create_handler_registry(prefix='/api')
+registry = rebar.create_handler_registry(prefix="/api")
 db = SQLAlchemy()
 migrate = Migrate(db=db)
 
@@ -19,5 +19,5 @@ def create_app() -> Flask:
     return app
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     create_app().run()
