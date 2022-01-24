@@ -22,3 +22,8 @@ class ImageCreationSchema(RequestSchema):
 
         if 'file' not in data and 'url' not in data:
             raise ValidationError('Must provide file or URL for image.')
+
+
+class ImageListSchema(ResponseSchema):
+    count = fields.Number()
+    items = fields.List(fields.Nested(ImageSchema), default=[])

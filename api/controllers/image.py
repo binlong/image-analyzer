@@ -1,8 +1,11 @@
 import flask_rebar
 
 from api.app import registry
-from api.schemas.image import ImageSchema, ImageCreationSchema
-from uuid import uuid4, UUID
+from api.schemas.image import ImageSchema, ImageCreationSchema, ImageListSchema
+from flask_rebar import errors
+from uuid import UUID
+
+from api.services import image_service
 
 BASE_URL = "/images"
 
@@ -10,10 +13,12 @@ BASE_URL = "/images"
 @registry.handles(
     method="GET",
     rule=BASE_URL,
-    response_body_schema={200: ImageSchema()},
+    response_body_schema={200: ImageListSchema()},
 )
 def get_images():
-    return {"id": uuid4()}
+    images = image_service.get_all_images()
+
+    return {"count": len(images), "items": images}, 200
 
 
 @registry.handles(
@@ -22,22 +27,27 @@ def get_images():
     response_body_schema={200: ImageSchema()},
 )
 def get_image(image_id: UUID):
-    return {"id": image_id}
+    image = image_service.get_image_by(str(image_id))
+
+    if (image is None):
+        raise errors.NotFound("Image not found")
+
+    return image
 
 
 @registry.handles(
     method="POST",
     rule=BASE_URL,
-    request_body_schema=ImageCreationSchema,
-    response_body_schema={200: ImageSchema()},
+    request_body_schema=ImageCreationSchema(),
+    response_body_schema={201: ImageSchema()},
 )
 def save_image():
     body = flask_rebar.get_validated_body()
-    image = {"id": uuid4()}
-
     if 'label' in body:
-        image['label'] = body['label']
+        label = body['label']
     else:
-        image['label'] = "generated_label"
+        label = "generated_label"
 
-    return image
+    image = image_service.create_image(label)
+
+    return image, 201
