@@ -3,6 +3,7 @@ This project uses python and Flask to develop a REST API that utilizes google cl
 
 # Install Dependencies
 * pip install poetry
+* poetry shell
 * poetry install
 * setup GOOGLE_APPLICATION_CREDENTIALS in .env file.
   * To request credentials please follow the instructions from Google at https://cloud.google.com/vision/docs/quickstart-client-libraries
