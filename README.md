@@ -2,6 +2,7 @@
 This project uses python and Flask to develop a REST API that utilizes google cloud vision to detect objects in an image and stores the data inside sqlite3 database.
 
 # Install Dependencies
+* pip install poetry
 * poetry install
 * setup GOOGLE_APPLICATION_CREDENTIALS in .env file.
   * To request credentials please follow the instructions from Google at https://cloud.google.com/vision/docs/quickstart-client-libraries
